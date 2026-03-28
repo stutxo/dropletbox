@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dropletbox.com</title>
+</head>
+<body>
+  <script>
+    (() => {
+      const url = new URL(window.location.href);
+      const segments = url.pathname.split("/").filter(Boolean);
+      if (segments.length === 0) {
+        window.location.replace("/");
+        return;
+      }
+
+      const lastSegment = segments.pop();
+      const target = new URL(`/${segments.join("/")}${segments.length ? "/" : ""}`, url.origin);
+      target.hash = url.hash;
+
+      if (/^[0-9a-fA-F]{64}$/.test(lastSegment)) {
+        target.searchParams.set("txid", lastSegment.toLowerCase());
+      }
+
+      window.location.replace(target.toString());
+    })();
+  </script>
+</body>
+</html>

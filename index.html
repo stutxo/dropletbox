@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💧</text></svg>">
+  <title>dropletbox.com 💧</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: monospace;
+      max-width: 540px;
+      margin: 0 auto;
+      padding: 24px 16px;
+      color: #222;
+      line-height: 1.5;
+    }
+    h1 { font-size: 1.4em; margin: 0; }
+    .site-header-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .site-brand {
+      min-width: 0;
+    }
+    .site-tagline {
+      margin-top: 4px;
+      font-size: 0.9em;
+      font-weight: bold;
+      color: #222;
+    }
+    .site-note {
+      margin-top: 8px;
+      margin-bottom: 10px;
+      font-size: 0.8em;
+      line-height: 1.4;
+    }
+    .site-note a {
+      color: #06c;
+      text-decoration: none;
+    }
+    .site-note a:hover {
+      text-decoration: underline;
+    }
+    .header-links {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    /* -- Global Error -- */
+    #global-error {
+      color: #d32f2f;
+      background: #ffebee;
+      border: 1px solid #ffcdd2;
+      padding: 8px;
+      font-size: 0.85em;
+      margin-bottom: 12px;
+      display: none;
+      text-align: center;
+    }
+
+    /* -- Sections -- */
+    .section {
+      border: 1px solid #ddd;
+      padding: 12px;
+      margin-bottom: 12px;
+      background: #fafafa;
+    }
+    .section-label {
+      font-size: 0.75em;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #888;
+      margin-bottom: 8px;
+    }
+
+    /* -- Inputs -- */
+    input[type="text"] {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #ccc;
+      font-family: monospace;
+      font-size: 0.7em;
+      background: #fff;
+    }
+    input[type="text"]:disabled { background: #eee; color: #999; }
+    .address-help {
+      margin-top: 8px;
+      font-size: 0.78em;
+      line-height: 1.5;
+      color: #b26a00;
+    }
+    .checkbox-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      line-height: 1.45;
+    }
+    .checkbox-row input {
+      margin: 2px 0 0;
+      flex: 0 0 auto;
+    }
+
+    /* -- File row -- */
+    .file-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 48px;
+    }
+    .file-thumb {
+      width: 48px; height: 48px;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+      font-size: 11px;
+      text-align: center;
+      background: #fff;
+    }
+    .file-thumb img {
+      width: 48px; height: 48px;
+      object-fit: cover; display: block;
+    }
+    .file-info { min-width: 0; font-size: 0.85em; }
+    .file-name { font-weight: bold; word-break: break-word; }
+    .file-meta { color: #888; font-size: 0.8em; }
+
+    /* -- Buttons -- */
+    button {
+      font-family: monospace;
+      font-size: 0.85em;
+      padding: 6px 14px;
+      border: 1px solid #aaa;
+      background: #fff;
+      cursor: pointer;
+    }
+    button:hover:not(:disabled) { background: #f0f0f0; }
+    button:disabled { opacity: 0.4; cursor: default; }
+    button.primary {
+      background: #222;
+      color: #fff;
+      border-color: #222;
+    }
+    button.primary:hover:not(:disabled) { background: #444; }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    /* -- Status panel (always visible, fixed height area) -- */
+    .status-panel {
+      min-height: 40px;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      background: #f5f5f0;
+      font-size: 0.85em;
+      margin-bottom: 12px;
+      word-break: break-word;
+    }
+    .status-panel:empty::after {
+      content: "Ready";
+      color: #aaa;
+    }
+
+    /* -- Progress area (always present, content swaps) -- */
+    .progress-area {
+      min-height: 88px;
+      border: 1px solid #ddd;
+      padding: 12px;
+      margin-bottom: 12px;
+      background: #fff;
+      font-size: 0.85em;
+      word-break: break-word;
+    }
+    .progress-steps {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    .progress-step {
+      position: relative;
+      flex: 1;
+      min-width: 0;
+      text-align: center;
+      color: #999;
+    }
+    .progress-step::before {
+      content: "";
+      position: absolute;
+      top: 6px;
+      left: calc(-50% + 12px);
+      right: calc(50% + 12px);
+      height: 1px;
+      background: #ddd;
+      transition: background 0.2s ease;
+    }
+    .progress-step:first-child::before {
+      display: none;
+    }
+    .progress-step.is-complete::before,
+    .progress-step.is-current::before,
+    .progress-step.is-error::before {
+      background: #222;
+    }
+    .progress-step-dot {
+      position: relative;
+      z-index: 1;
+      width: 12px;
+      height: 12px;
+      margin: 0 auto 6px;
+      border: 1px solid #bbb;
+      border-radius: 999px;
+      background: #fff;
+      box-shadow: 0 0 0 4px #fff;
+      transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .progress-step-label {
+      font-size: 0.68em;
+      line-height: 1.25;
+      white-space: nowrap;
+    }
+    .progress-step.is-complete {
+      color: #222;
+    }
+    .progress-step.is-complete .progress-step-dot {
+      background: #222;
+      border-color: #222;
+    }
+    .progress-step.is-current {
+      color: #222;
+    }
+    .progress-step.is-current .progress-step-dot {
+      border-color: #222;
+      box-shadow: 0 0 0 4px #fff, 0 0 0 6px rgba(34, 34, 34, 0.12);
+      animation: progressPulse 1.4s ease-in-out infinite;
+    }
+    .progress-step.is-error {
+      color: #b3261e;
+    }
+    .progress-step.is-error .progress-step-dot {
+      background: #b3261e;
+      border-color: #b3261e;
+      box-shadow: 0 0 0 4px #fff, 0 0 0 6px rgba(179, 38, 30, 0.12);
+    }
+    .progress-content:empty::after {
+      content: "No active droplet";
+      color: #ccc;
+    }
+    .progress-area a { color: #06c; }
+    .progress-area canvas { display: block; margin: 0 auto 8px; }
+    @keyframes progressPulse {
+      0%, 100% { box-shadow: 0 0 0 4px #fff, 0 0 0 6px rgba(34, 34, 34, 0.12); }
+      50% { box-shadow: 0 0 0 4px #fff, 0 0 0 8px rgba(34, 34, 34, 0.18); }
+    }
+
+    /* -- Raw tx -- */
+    details { margin-bottom: 12px; font-size: 0.85em; }
+    details summary { cursor: pointer; }
+    textarea {
+      width: 100%;
+      font-family: monospace;
+      font-size: 0.8em;
+      margin: 4px 0;
+      resize: vertical;
+    }
+
+    .price-tag {
+      font-size: 0.85em;
+      color: #555;
+      margin-top: 6px;
+    }
+    .price-tag:empty { display: none; }
+
+    /* -- History entries -- */
+    .history-entry {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    .history-entry:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+    .history-thumb {
+      width: 40px; height: 40px;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+      font-size: 10px;
+      text-align: center;
+      background: #fff;
+    }
+    .history-thumb img {
+      width: 40px; height: 40px;
+      object-fit: cover; display: block;
+    }
+    .history-info {
+      min-width: 0;
+      flex: 1;
+    }
+
+    /* -- Tabs -- */
+    .tab-bar {
+      display: flex;
+      margin-bottom: 12px;
+    }
+    .tab-bar button {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ddd;
+      background: #fafafa;
+      font-family: monospace;
+      font-size: 0.9em;
+      cursor: pointer;
+    }
+    .tab-bar button + button { border-left: none; }
+    .tab-bar button.active {
+      background: #222;
+      color: #fff;
+      border-color: #222;
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* -- Explore -- */
+    .explore-search-row {
+      display: flex;
+      gap: 8px;
+    }
+    .explore-search-row input { flex: 1; }
+    .explore-entry {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .explore-entry:last-child { border-bottom: none; }
+    .explore-actions {
+      flex-shrink: 0;
+      display: flex;
+      gap: 4px;
+    }
+    .explore-actions button {
+      font-size: 0.75em;
+      padding: 3px 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="site-header">
+    <div class="site-header-row">
+      <div class="site-brand">
+        <h1>dropletbox.com 💧</h1>
+        <div class="site-tagline">Liquidate your memories &trade;</div>
+        <div class="site-note">
+          quantum proof storage on the
+          <a href="https://liquid.network/" target="_blank" rel="noreferrer">liquid network</a>
+        </br>
+        </br>
+          (beta software, use at your own risk. There is no backend server, everything is local, and stored in the browser session)
+        </div>
+      </div>
+      <div class="header-links">
+        <a
+          class="github-button"
+          href="https://github.com/stutxo/dropletbox"
+          data-show-count="true"
+          aria-label="Star stutxo/dropletbox on GitHub"
+        >Star</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="global-error"></div>
+
+  <div class="tab-bar">
+    <button id="tab-btn-create" class="active">Create</button>
+    <button id="tab-btn-explore">Explore</button>
+  </div>
+
+  <div id="tab-create" class="tab-content active">
+  <div class="section">
+    <div class="section-label">File</div>
+    <div class="file-row">
+      <div id="upload-preview" class="file-thumb">💧</div>
+      <div class="file-info">
+        <div id="upload-name" class="file-name">Default droplet 💧</div>
+        <div id="upload-preview-meta" class="file-meta"></div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button id="btn-upload" type="button">Upload file</button>
+      <button id="btn-clear-upload" type="button" hidden>Clear</button>
+      <input id="upload-input" type="file" hidden />
+      <span id="upload-hint" style="font-size:0.8em;color:#888">or use the default droplet</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Liquid change address (Droplet receive address)</div>
+    <input id="address" type="text" spellcheck="false" autocomplete="off" placeholder="Enter confidential Liquid address" />
+    <label class="checkbox-row" style="margin-top:8px">
+      <input id="use-default-address" type="checkbox" />
+      <span style="font-size:0.85em">Send change/droplet to donation address instead (i dont know if anyone has a liquid wallet)</span>
+    </label>
+    <div id="address-help" class="address-help">Enter your own confidential Liquid address, or tick the box to fill in the donation address. You can get one from Aqua Wallet.</div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Create droplet (You will need to pay with a lightning wallet)</div>
+    <div class="btn-row" style="margin-top:0">
+      <button id="btn-action" class="primary" disabled>Create droplet</button>
+      <button id="btn-new" hidden>Cancel</button>
+    </div>
+    <div id="price" class="price-tag"></div>
+  </div>
+
+  <div id="status" class="status-panel"></div>
+
+  <div id="progress" class="progress-area">
+    <div id="progress-steps" class="progress-steps" aria-hidden="true"></div>
+    <div id="progress-content" class="progress-content"></div>
+  </div>
+
+  <details id="raw-tx" hidden>
+    <summary>Show raw transactions</summary>
+    <p style="margin-top:6px">Commit tx</p>
+    <textarea id="commit-hex" rows="3" readonly></textarea>
+    <button id="btn-copy-commit">Copy commit tx</button>
+    <p style="margin-top:6px">Reveal tx</p>
+    <textarea id="reveal-hex" rows="3" readonly></textarea>
+    <button id="btn-copy-reveal">Copy reveal tx</button>
+  </details>
+
+  <div class="section">
+    <div class="section-label">Your droplets</div>
+    <div id="history-list" style="font-size:0.85em;max-height:300px;overflow-y:auto"></div>
+    <button id="btn-clear-history" style="margin-top:6px;font-size:0.8em" hidden>Clear history</button>
+  </div>
+
+  </div><div id="tab-explore" class="tab-content">
+
+    <div class="section">
+      <div class="section-label">Look up a droplet by txid</div>
+      <div class="explore-search-row">
+        <input id="explore-txid" type="text" spellcheck="false" autocomplete="off" placeholder="Enter reveal txid" />
+        <button id="btn-explore-fetch">Fetch</button>
+      </div>
+      <div id="explore-search-result" style="margin-top:8px"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Latest droplets on Liquid</div>
+      <div id="explore-status" style="font-size:0.85em;color:#888;margin-bottom:8px"></div>
+      <div id="explore-list" style="font-size:0.85em;max-height:400px;overflow-y:auto"></div>
+    </div>
+
+  </div><script type="module">
+    import QRCode from "https://esm.sh/qrcode@1.5.4";
+
+    const STORAGE_KEY = "dropletbox-app-snapshot-v1";
+    const EXPLORER = "https://blockstream.info/liquid";
+    const ROUTE_TXID_QUERY_KEY = "txid";
+    const TXID_RE = /^[0-9a-fA-F]{64}$/;
+    const RETRYABLE = ["transaction.mempool", "transaction.confirmed", "invoice.settled"];
+    const MAX_UPLOAD_BYTES = 390_000;
+    const THUMB_SIZE = 80; // px – rendered at 40px CSS but 2x for retina
+    const el = (id) => document.getElementById(id);
+    const ui = {
+      globalError: el("global-error"),
+      useDefaultAddress: el("use-default-address"),
+      address: el("address"),
+      uploadInput: el("upload-input"),
+      btnUpload: el("btn-upload"),
+      btnClearUpload: el("btn-clear-upload"),
+      btnAction: el("btn-action"),
+      btnNew: el("btn-new"),
+      uploadPreview: el("upload-preview"),
+      uploadName: el("upload-name"),
+      uploadPreviewMeta: el("upload-preview-meta"),
+      uploadHint: el("upload-hint"),
+      price: el("price"),
+      status: el("status"),
+      progress: el("progress"),
+      progressSteps: el("progress-steps"),
+      progressContent: el("progress-content"),
+      rawTx: el("raw-tx"),
+      commitHex: el("commit-hex"),
+      revealHex: el("reveal-hex"),
+      btnCopyCommit: el("btn-copy-commit"),
+      btnCopyReveal: el("btn-copy-reveal"),
+      historyList: el("history-list"),
+      btnClearHistory: el("btn-clear-history"),
+      // Tabs
+      tabBtnCreate: el("tab-btn-create"),
+      tabBtnExplore: el("tab-btn-explore"),
+      tabCreate: el("tab-create"),
+      tabExplore: el("tab-explore"),
+      // Explore
+      exploreTxid: el("explore-txid"),
+      btnExploreFetch: el("btn-explore-fetch"),
+      exploreSearchResult: el("explore-search-result"),
+      exploreStatus: el("explore-status"),
+      exploreList: el("explore-list"),
+    };
+
+    /* ── Fetch Interceptor (Catches WASM and JS 429s) ── */
+    const origFetch = window.fetch;
+    window.fetch = async (...args) => {
+      const res = await origFetch(...args);
+      const url = typeof args[0] === "string" ? args[0] : (args[0]?.url || "");
+      if (url.includes("blockstream.info")) {
+        if (res.status === 429) {
+          ui.globalError.textContent = "Error: Throttled by Esplorer API (Too Many Requests). Please wait a moment.";
+          ui.globalError.style.display = "block";
+        } else if (res.ok) {
+          ui.globalError.style.display = "none";
+        }
+      }
+      return res;
+    };
+
+    const runtime = {
+      app: null,
+      decodeRevealPayload: null,
+      currentInvoice: "",
+      currentUploadPreview: null,
+      uploadComplete: false,
+      pollTimer: undefined,
+      quoteTimer: undefined,
+      previewUrls: { upload: null },
+      defaultDestinationAddress: "",
+    };
+    const PROGRESS_STEPS = [
+      { key: "invoice", label: "Invoice" },
+      { key: "lockup", label: "Lockup" },
+      { key: "build", label: "Build" },
+      { key: "commit", label: "Commit" },
+      { key: "reveal", label: "Reveal" },
+      { key: "done", label: "Done" },
+    ];
+
+    /* ── Snapshot persistence ── */
+    function saveSnapshot() {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(runtime.app.exportSnapshot())); } catch {}
+    }
+    function clearSnapshot() {
+      try { localStorage.removeItem(STORAGE_KEY); } catch {}
+    }
+    function loadAppFromSnapshot(mod) {
+      const snapshot = localStorage.getItem(STORAGE_KEY);
+      if (!snapshot) return new mod.DropletboxApp();
+      try {
+        return mod.DropletboxApp.fromSnapshot(JSON.parse(snapshot));
+      } catch {
+        clearSnapshot();
+        return new mod.DropletboxApp();
+      }
+    }
+    function resetApp() {
+      clearSnapshot();
+      location.reload();
+    }
+
+    /* ── Helpers ── */
+    function txidLink(txid) {
+      return `<a href="${EXPLORER}/tx/${txid}" target="_blank" rel="noreferrer">${escapeHtml(txid)}</a>`;
+    }
+    function normalizeTxid(value) {
+      const txid = (value || "").trim();
+      return TXID_RE.test(txid) ? txid.toLowerCase() : "";
+    }
+    function routeUrl() {
+      return new URL(window.location.href);
+    }
+    function routeTxid() {
+      const url = routeUrl();
+      const searchTxid = normalizeTxid(url.searchParams.get(ROUTE_TXID_QUERY_KEY) || "");
+      if (searchTxid) return searchTxid;
+
+      const hashValue = url.hash.startsWith("#") ? url.hash.slice(1) : url.hash;
+      if (hashValue) {
+        const hashTxid = normalizeTxid(hashValue.replace(/^txid=/i, ""));
+        if (hashTxid) return hashTxid;
+      }
+
+      const segments = url.pathname.split("/").filter(Boolean);
+      for (let i = segments.length - 1; i >= 0; i--) {
+        const pathTxid = normalizeTxid(segments[i]);
+        if (pathTxid) return pathTxid;
+      }
+      return "";
+    }
+    function setRouteTxid(txid) {
+      const normalized = normalizeTxid(txid);
+      const url = routeUrl();
+      if (normalized) {
+        url.searchParams.set(ROUTE_TXID_QUERY_KEY, normalized);
+      } else {
+        url.searchParams.delete(ROUTE_TXID_QUERY_KEY);
+      }
+      history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+    }
+    function setRootRoute() {
+      history.replaceState(null, "", "/");
+    }
+    function syncDestinationUi(disabled = false) {
+      ui.useDefaultAddress.disabled = disabled;
+      ui.address.disabled = disabled || ui.useDefaultAddress.checked;
+    }
+    function effectiveDestinationAddress() {
+      return ui.useDefaultAddress.checked
+        ? runtime.defaultDestinationAddress
+        : ui.address.value.trim();
+    }
+    function initializeDestinationUi(destinationAddress) {
+      const useDefaultAddress = destinationAddress === runtime.defaultDestinationAddress;
+      ui.useDefaultAddress.checked = useDefaultAddress;
+      ui.address.value = useDefaultAddress ? runtime.defaultDestinationAddress : (destinationAddress || "");
+      syncDestinationUi(Boolean(runtime.app?.currentSwap()));
+    }
+    async function fetchTxConfirmed(txid) {
+      if (!txid) return false;
+      try {
+        const r = await fetch(`${EXPLORER}/api/tx/${txid}`);
+        if (!r.ok) return false;
+        const info = await r.json();
+        return Boolean(info.status?.confirmed);
+      } catch { return false; }
+    }
+    function escapeHtml(v) {
+      return v.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;");
+    }
+
+    /* ── UI primitives (no layout shifts) ── */
+    let _dotsTimer = null;
+    let _dotsBase = "";
+    function setStatus(message, active = false) {
+      clearInterval(_dotsTimer);
+      _dotsTimer = null;
+      _dotsBase = message || "";
+      ui.status.textContent = _dotsBase;
+      if (active && _dotsBase) {
+        let n = 0;
+        _dotsTimer = setInterval(() => {
+          n = (n % 3) + 1;
+          ui.status.textContent = _dotsBase + ".".repeat(n);
+        }, 500);
+      }
+    }
+    function setProgress(html) {
+      ui.progressContent.innerHTML = html || "";
+    }
+    function setRestartButton({ hidden = false, label = "Cancel", needsConfirm = true }) {
+      ui.btnNew.hidden = hidden;
+      ui.btnNew.disabled = false;
+      ui.btnNew.textContent = label;
+      ui.btnNew._needsConfirm = needsConfirm;
+    }
+    function setActionButton({ text = "", disabled = false, onClick = null }) {
+      ui.btnAction.textContent = text;
+      ui.btnAction.disabled = disabled;
+      ui.btnAction.onclick = onClick;
+    }
+    function progressStateFromStatus(status, { confirmed = false } = {}) {
+      const rawStatus = status?.rawStatus || null;
+      const phase = status?.phase || "idle";
+      const invoiceActive = Boolean(status?.swapId || rawStatus);
+      const invoiceSettled = ["invoice.settled", "transaction.mempool", "transaction.confirmed"].includes(rawStatus);
+      const hasLockup = Boolean(status?.lockupTxid);
+      const txsPrepared = Boolean(status?.commitTxid && status?.revealTxid);
+      const commitBroadcasted = Boolean(status?.commitBroadcasted);
+      const revealBroadcasted = Boolean(status?.revealBroadcasted);
+      const isError = ["client_failed", "invoice_expired", "swap_expired", "transaction_failed"].includes(phase);
+
+      let currentIndex = -1;
+      if (invoiceActive) {
+        if (!invoiceSettled) currentIndex = 0;
+        else if (!hasLockup) currentIndex = 1;
+        else if (!txsPrepared) currentIndex = 2;
+        else if (!commitBroadcasted) currentIndex = 3;
+        else if (!revealBroadcasted) currentIndex = 4;
+        else if (!confirmed) currentIndex = 5;
+      }
+
+      return PROGRESS_STEPS.map((step, index) => {
+        let state = "upcoming";
+        if (confirmed || (currentIndex >= 0 && index < currentIndex)) state = "complete";
+        if (!confirmed && currentIndex === index) state = isError ? "error" : "current";
+        return { ...step, state };
+      });
+    }
+    function renderProgressStepper(status, options) {
+      const states = progressStateFromStatus(status, options);
+      ui.progressSteps.innerHTML = states.map(({ label, state }) => (
+        `<div class="progress-step is-${state}">`
+          + `<div class="progress-step-dot"></div>`
+          + `<div class="progress-step-label">${label}</div>`
+        + `</div>`
+      )).join("");
+    }
+
+    /* ── Blob / preview helpers (unchanged logic) ── */
+    function revokePreviewUrl(key) {
+      if (!runtime.previewUrls[key]) return;
+      URL.revokeObjectURL(runtime.previewUrls[key]);
+      runtime.previewUrls[key] = null;
+    }
+    function setPreviewUrl(key, url) {
+      revokePreviewUrl(key);
+      runtime.previewUrls[key] = url;
+      return url;
+    }
+    function hexToBytes(hex) {
+      if (!hex) return new Uint8Array();
+      const b = new Uint8Array(hex.length / 2);
+      for (let i = 0; i < b.length; i++) b[i] = parseInt(hex.slice(i*2, i*2+2), 16);
+      return b;
+    }
+    function contentTypeBase(ct) {
+      return (ct || "text/plain;charset=utf-8").split(";")[0].trim().toLowerCase();
+    }
+    const MIME_LABELS = {
+      "text/plain": "TXT", "text/html": "HTML", "text/css": "CSS",
+      "text/csv": "CSV", "application/json": "JSON", "application/pdf": "PDF",
+      "application/zip": "ZIP", "application/xml": "XML",
+      "application/javascript": "JS", "application/octet-stream": "BIN",
+    };
+    function fileExtension(name, ct) {
+      const d = name ? name.lastIndexOf(".") : -1;
+      if (d > -1 && d < name.length - 1) return name.slice(d+1).toUpperCase().slice(0,6);
+      const base = contentTypeBase(ct);
+      if (MIME_LABELS[base]) return MIME_LABELS[base];
+      const s = base.indexOf("/");
+      if (s > -1 && s < base.length - 1) return base.slice(s+1).toUpperCase().slice(0,6);
+      return "FILE";
+    }
+    function isTextLike(ct) {
+      const b = contentTypeBase(ct);
+      return b.startsWith("text/") || b === "application/json" || b.endsWith("+json") || b === "application/xml" || b.endsWith("+xml") || b === "application/javascript";
+    }
+    function blobUrlFromPayload(hex, ct) {
+      return URL.createObjectURL(new Blob([hexToBytes(hex)], { type: ct }));
+    }
+
+    function clearUploadPreview() {
+      revokePreviewUrl("upload");
+      ui.uploadPreview.replaceChildren();
+      ui.uploadPreview.textContent = "💧";
+      ui.uploadName.textContent = "Default droplet 💧";
+      ui.uploadPreviewMeta.textContent = "";
+      ui.btnClearUpload.hidden = true;
+    }
+
+    /* ── Render upload thumbnail ── */
+    function renderUpload(upload) {
+      runtime.currentUploadPreview = upload;
+      if (!upload) { clearUploadPreview(); return; }
+
+      revokePreviewUrl("upload");
+      ui.uploadPreview.replaceChildren();
+      ui.uploadPreviewMeta.textContent = `${upload.contentType}, ${upload.payloadLen.toLocaleString()} bytes`;
+      ui.btnClearUpload.hidden = Boolean(upload.isFallback);
+
+      if (upload.isFallback) {
+        ui.uploadPreview.textContent = "💧";
+        ui.uploadName.textContent = "Default droplet 💧";
+      } else {
+        ui.uploadName.textContent = upload.fileName || "Unnamed file";
+        const ct = upload.contentType || "text/plain;charset=utf-8";
+        const base = contentTypeBase(ct);
+        if (base.startsWith("image/")) {
+          const url = setPreviewUrl("upload", blobUrlFromPayload(upload.payloadHex, ct));
+          const img = document.createElement("img");
+          img.src = url;
+          img.alt = upload.fileName || "upload";
+          ui.uploadPreview.appendChild(img);
+        } else {
+          const badge = document.createElement("span");
+          badge.textContent = fileExtension(upload.fileName || "", ct);
+          badge.style.fontSize = "11px";
+          badge.style.padding = "4px";
+          badge.style.wordBreak = "break-word";
+          ui.uploadPreview.appendChild(badge);
+        }
+      }
+    }
+
+    /* ── Build progress HTML from swap status ── */
+    function buildProgressLines(status) {
+      const lines = [];
+      if (status.swapId) lines.push(`Boltz swap: ${escapeHtml(status.swapId)}`);
+      const lockupPending = ["invoice.settled","transaction.mempool","transaction.confirmed"].includes(status.rawStatus);
+      if (status.lockupTxid) lines.push(`Lockup: ${txidLink(status.lockupTxid)}`);
+      else if (lockupPending) lines.push("Lockup: waiting for Boltz…");
+      if (status.commitTxid) {
+        const l = status.commitBroadcasted ? "Commit submitted" : "Commit prepared";
+        lines.push(`${l}: ${txidLink(status.commitTxid)}`);
+      }
+      if (status.commitTxid && status.revealTxid && (status.commitBroadcasted || status.revealBroadcasted)) {
+        const l = status.revealBroadcasted ? "Reveal submitted" : (status.commitBroadcasted ? "Reveal ready" : "Reveal prepared");
+        lines.push(`${l}: ${txidLink(status.revealTxid)}`);
+      }
+      return lines;
+    }
+
+    function renderRawTransactions(status) {
+      const has = Boolean(status.commitTxHex || status.revealTxHex);
+      ui.rawTx.hidden = !has;
+      ui.commitHex.value = status.commitTxHex || "";
+      ui.revealHex.value = status.revealTxHex || "";
+    }
+
+    /* ── Thumbnail generation for history ── */
+    function generateThumbnail(payloadHex, contentType) {
+      return new Promise((resolve) => {
+        const base = contentTypeBase(contentType);
+
+        if (base.startsWith("image/")) {
+          // SVGs: store as data URL directly (small text, canvas renders them poorly)
+          if (base === "image/svg+xml") {
+            const bytes = hexToBytes(payloadHex);
+            const b64 = btoa(String.fromCharCode(...bytes));
+            resolve({ type: "image", dataUrl: `data:image/svg+xml;base64,${b64}` });
+            return;
+          }
+          // Raster images: downscale via canvas
+          const blob = new Blob([hexToBytes(payloadHex)], { type: contentType });
+          const url = URL.createObjectURL(blob);
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            canvas.width = THUMB_SIZE;
+            canvas.height = THUMB_SIZE;
+            const ctx = canvas.getContext("2d");
+            // cover-crop to square
+            const s = Math.min(img.width, img.height);
+            const sx = (img.width - s) / 2;
+            const sy = (img.height - s) / 2;
+            ctx.drawImage(img, sx, sy, s, s, 0, 0, THUMB_SIZE, THUMB_SIZE);
+            URL.revokeObjectURL(url);
+            resolve({ type: "image", dataUrl: canvas.toDataURL("image/png") });
+          };
+          img.onerror = () => {
+            URL.revokeObjectURL(url);
+            resolve({ type: "ext", label: fileExtension("", contentType) });
+          };
+          img.src = url;
+        } else {
+          resolve({ type: "ext", label: fileExtension("", contentType) });
+        }
+      });
+    }
+
+    /* ── Phase renderers ── */
+    async function renderIdleState() {
+      syncDestinationUi(false);
+      ui.btnUpload.disabled = false;
+      runtime.uploadComplete = false;
+      runtime.currentInvoice = "";
+      renderProgressStepper(null);
+      setProgress("");
+      ui.rawTx.hidden = true;
+      setRestartButton({ hidden: true });
+      setActionButton({ text: "Create droplet", disabled: true });
+      await updateQuote();
+    }
+
+    async function renderInvoiceState(swap) {
+      renderProgressStepper(swap.status);
+      setStatus(`Waiting for payment of ${swap.invoiceAmountSat} sats (LIGHTNING NETWORK SATS)`, true);
+      setActionButton({ text: "Waiting for payment…", disabled: true });
+      setRestartButton({ label: "Cancel", needsConfirm: true });
+      runtime.currentInvoice = swap.invoice;
+
+      // render QR + copy button into progress area
+      const wrapper = document.createElement("div");
+      wrapper.style.textAlign = "center";
+      const canvas = document.createElement("canvas");
+      wrapper.appendChild(canvas);
+      const br = document.createElement("br");
+      wrapper.appendChild(br);
+      const btn = document.createElement("button");
+      btn.textContent = "Copy Lightning invoice";
+      btn.onclick = async () => {
+        try {
+          await navigator.clipboard.writeText(runtime.currentInvoice);
+          btn.textContent = "Copied!";
+          setTimeout(() => { btn.textContent = "Copy Lightning invoice"; }, 2000);
+        } catch {}
+      };
+      wrapper.appendChild(btn);
+      ui.progressContent.replaceChildren(wrapper);
+      await QRCode.toCanvas(canvas, swap.invoice.toUpperCase(), { width: 256, margin: 1 });
+    }
+
+    async function renderRevealState(status) {
+      const lines = buildProgressLines(status);
+      renderProgressStepper(status);
+      setProgress(lines.join("<br>"));
+      setActionButton({ text: "Retry broadcast", disabled: false, onClick: retrySwap });
+      setRestartButton({ label: "Cancel", needsConfirm: true });
+
+      try {
+        if (await fetchTxConfirmed(status.revealTxid)) {
+          stopPolling();
+          runtime.uploadComplete = true;
+          renderProgressStepper(status, { confirmed: true });
+          setRestartButton({ hidden: true });
+          setStatus("Upload complete!");
+          setActionButton({ text: "Create new droplet", disabled: false, onClick: () => resetApp() });
+
+          try {
+            const hexR = await fetch(`${EXPLORER}/api/tx/${status.revealTxid}/hex`);
+            if (!hexR.ok) throw new Error("fetch failed");
+            const hex = await hexR.text();
+            const decoded = runtime.decodeRevealPayload(hex);
+            setProgress(lines.join("<br>"));
+
+            // Generate thumbnail and add to history
+            const thumb = await generateThumbnail(decoded.payloadHex, decoded.contentType);
+            addHistoryEntry(status.revealTxid, runtime.currentUploadPreview?.fileName, decoded.contentType, thumb);
+          } catch {
+            lines.push("Could not decode payload.");
+            setProgress(lines.join("<br>"));
+            addHistoryEntry(status.revealTxid, runtime.currentUploadPreview?.fileName, null, null);
+          }
+          return;
+        }
+      } catch {}
+
+      setStatus("Waiting for reveal to confirm on Liquid (~60 secs)", true);
+    }
+
+    async function renderFailedState(status) {
+      renderProgressStepper(status);
+      setProgress(buildProgressLines(status).join("<br>"));
+      setStatus(`Upload failed: ${status.message}`);
+      if (RETRYABLE.includes(status.rawStatus)) {
+        setActionButton({ text: "Retry broadcast", disabled: false, onClick: retrySwap });
+        setRestartButton({ label: "Cancel", needsConfirm: true });
+      } else {
+        setActionButton({ text: "Start over", disabled: false, onClick: () => resetApp() });
+        runtime.uploadComplete = true;
+        setRestartButton({ hidden: true });
+      }
+    }
+
+    async function renderInProgressState(status) {
+      renderProgressStepper(status);
+      setProgress(buildProgressLines(status).join("<br>"));
+      setStatus(status.message, true);
+      setRestartButton({ label: "Cancel", needsConfirm: true });
+      if (RETRYABLE.includes(status.rawStatus)) {
+        setActionButton({ text: "Retry broadcast", disabled: false, onClick: retrySwap });
+      } else {
+        setActionButton({ text: "Processing…", disabled: true });
+      }
+    }
+
+    async function renderSwapPhase(swap) {
+      const status = swap.status;
+      renderRawTransactions(status);
+      if (status.rawStatus === "swap.created") { await renderInvoiceState(swap); return; }
+      runtime.currentInvoice = "";
+      if (status.revealBroadcasted && status.revealTxid) { await renderRevealState(status); return; }
+      if (status.phase === "client_failed") { await renderFailedState(status); return; }
+      await renderInProgressState(status);
+    }
+
+    async function renderSwap() {
+      const swap = runtime.app.currentSwap();
+      if (!swap) { await renderIdleState(); return; }
+      syncDestinationUi(true);
+      ui.btnUpload.disabled = true;
+      ui.btnClearUpload.hidden = true;
+      ui.price.textContent = "";
+      await renderSwapPhase(swap);
+    }
+
+    /* ── Quote / buy / retry ── */
+    async function updateQuote() {
+      if (runtime.app.currentSwap()) return;
+      setActionButton({ text: "Create droplet", disabled: true });
+      ui.price.textContent = "";
+      const destinationAddress = effectiveDestinationAddress();
+      if (!destinationAddress) {
+        setStatus("");
+        return;
+      }
+      setStatus("Checking price", true);
+      try {
+        const q = await runtime.app.quoteInvoice({ destinationAddress });
+        setStatus("");
+        ui.price.textContent = `${q.invoiceAmountSat} sats (LIGHTNING NETWORK SATS)`;
+        setActionButton({ text: "Create droplet", disabled: false, onClick: buyDroplet });
+      } catch (err) {
+        setStatus(`Error: ${err.message}`);
+        setActionButton({ text: "Create droplet", disabled: true });
+      }
+    }
+    function scheduleQuote() {
+      clearTimeout(runtime.quoteTimer);
+      runtime.quoteTimer = setTimeout(updateQuote, 300);
+    }
+    async function buyDroplet() {
+      setActionButton({ text: "Creating…", disabled: true });
+      try {
+        await runtime.app.create_invoice({ destinationAddress: effectiveDestinationAddress() });
+        saveSnapshot();
+        await renderSwap();
+      } catch (err) {
+        setStatus(`Failed: ${err.message}`);
+        setActionButton({ text: "Try again", disabled: false, onClick: buyDroplet });
+      }
+    }
+    async function retrySwap() {
+      setActionButton({ text: "Retrying…", disabled: true });
+      try {
+        await runtime.app.retryPendingSwap();
+        saveSnapshot();
+        await renderSwap();
+      } catch (err) {
+        setStatus(`Retry failed: ${err.message}`);
+        setActionButton({ text: "Retry broadcast", disabled: false, onClick: retrySwap });
+      }
+    }
+
+    /* ── Polling ── */
+    function stopPolling() { clearInterval(runtime.pollTimer); runtime.pollTimer = undefined; }
+    async function poll() {
+      if (!runtime.app?.currentSwap()) return;
+      try {
+        await runtime.app.poll_once();
+        saveSnapshot();
+        await renderSwap();
+      } catch (err) { console.error("poll error:", err); }
+    }
+
+    /* ── Upload handling ── */
+    async function handleUploadChange() {
+      const file = ui.uploadInput.files?.[0];
+      if (!file) {
+        await runtime.app.clearUpload();
+        saveSnapshot();
+        renderUpload(runtime.app.currentUploadPreview());
+        await updateQuote();
+        return;
+      }
+      if (file.size > MAX_UPLOAD_BYTES) {
+        setStatus(`File too large. Max ${MAX_UPLOAD_BYTES.toLocaleString()} bytes.`);
+        ui.uploadInput.value = "";
+        return;
+      }
+      try {
+        const ct = file.type || "text/plain;charset=utf-8";
+        const bytes = Array.from(new Uint8Array(await file.arrayBuffer()));
+        await runtime.app.setUpload({ fileName: file.name, contentType: ct, payloadBytes: bytes });
+        saveSnapshot();
+        renderUpload(runtime.app.currentUploadPreview());
+        await updateQuote();
+      } catch (err) { setStatus(`Upload failed: ${err.message}`); }
+    }
+
+    /* ── Copy buttons ── */
+    function bindCopy(btn, getText, label) {
+      btn.addEventListener("click", async () => {
+        const t = getText();
+        if (!t) return;
+        try { await navigator.clipboard.writeText(t); btn.textContent = "Copied!"; setTimeout(() => { btn.textContent = label; }, 2000); } catch {}
+      });
+    }
+
+    /* ── Droplet history ── */
+    const HISTORY_KEY = "dropletbox-history-v1";
+
+    function loadHistory() {
+      try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; } catch { return []; }
+    }
+
+    function saveHistory(entries) {
+      try { localStorage.setItem(HISTORY_KEY, JSON.stringify(entries)); } catch {}
+    }
+
+    function addHistoryEntry(revealTxid, fileName, contentType, thumb) {
+      const entries = loadHistory();
+      if (entries.some(e => e.txid === revealTxid)) return;
+      entries.unshift({
+        txid: revealTxid,
+        file: fileName || "Default droplet 💧",
+        ts: Date.now(),
+        ct: contentType || null,
+        thumb: thumb || null,   // { type: "image", dataUrl } or { type: "ext", label }
+      });
+      saveHistory(entries);
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const entries = loadHistory();
+      if (entries.length === 0) {
+        ui.historyList.textContent = "No droplets yet.";
+        ui.btnClearHistory.hidden = true;
+        return;
+      }
+      ui.btnClearHistory.hidden = false;
+      ui.historyList.replaceChildren();
+
+      for (const e of entries) {
+        const row = document.createElement("div");
+        row.className = "history-entry";
+
+        // Thumbnail
+        const thumbEl = document.createElement("div");
+        thumbEl.className = "history-thumb";
+        if (e.thumb?.type === "image" && e.thumb.dataUrl) {
+          const img = document.createElement("img");
+          img.src = e.thumb.dataUrl;
+          img.alt = e.file;
+          thumbEl.appendChild(img);
+        } else if (e.thumb?.type === "ext" && e.thumb.label) {
+          thumbEl.textContent = e.thumb.label;
+        } else if (e.file === "Default droplet 💧") {
+          thumbEl.textContent = "💧";
+        } else {
+          thumbEl.textContent = fileExtension(e.file, e.ct || "");
+        }
+
+        // Info
+        const info = document.createElement("div");
+        info.className = "history-info";
+        const date = new Date(e.ts).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+        const name = escapeHtml(e.file);
+        info.innerHTML = `<div style="font-weight:bold;word-break:break-word">${name} <span style="color:#888;font-weight:normal;font-size:0.85em">· ${date}</span></div>`
+          + `<a href="${EXPLORER}/tx/${escapeHtml(e.txid)}" target="_blank" rel="noreferrer" style="font-size:0.8em;color:#06c;word-break:break-all">${escapeHtml(e.txid)}</a>`;
+
+        row.appendChild(thumbEl);
+        row.appendChild(info);
+        ui.historyList.appendChild(row);
+      }
+    }
+
+    /* ── Tab switching ── */
+    function switchTab(name) {
+      const isCreate = name === "create";
+      ui.tabBtnCreate.classList.toggle("active", isCreate);
+      ui.tabBtnExplore.classList.toggle("active", !isCreate);
+      ui.tabCreate.classList.toggle("active", isCreate);
+      ui.tabExplore.classList.toggle("active", !isCreate);
+      if (!isCreate) {
+        startExploreAutoScan();
+      } else {
+        setRootRoute();
+        stopExploreAutoScan();
+      }
+    }
+
+    /* ── Explore state ── */
+    const explore = {
+      scanning: false,
+      seenTxids: new Set(),
+      tipHeight: null,       // chain tip we've scanned up to
+      autoTimer: null,
+    };
+    const EXPLORE_POLL_MS = 60_000;
+    const FETCH_DELAY_MS = 150; // throttle between API calls
+
+    /* ── Throttled fetch ── */
+    async function throttledFetch(url) {
+      await new Promise(r => setTimeout(r, FETCH_DELAY_MS));
+      return fetch(url);
+    }
+
+    /* ── Download helper ── */
+    function downloadDroplet(decoded) {
+      const bytes = hexToBytes(decoded.payloadHex);
+      const blob = new Blob([bytes], { type: decoded.contentType || "application/octet-stream" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const ext = fileExtension("", decoded.contentType || "").toLowerCase();
+      a.download = `droplet.${ext}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    /* ── Render one explore entry row ── */
+    function buildExploreEntry(item) {
+      const row = document.createElement("div");
+      row.className = "explore-entry";
+
+      // Thumbnail
+      const thumbEl = document.createElement("div");
+      thumbEl.className = "history-thumb";
+      if (item.thumb?.type === "image" && item.thumb.dataUrl) {
+        const img = document.createElement("img");
+        img.src = item.thumb.dataUrl;
+        img.alt = "droplet";
+        thumbEl.appendChild(img);
+      } else if (item.thumb?.type === "ext") {
+        thumbEl.textContent = item.thumb.label;
+      } else {
+        thumbEl.textContent = fileExtension("", item.decoded.contentType || "");
+      }
+
+      // Info
+      const info = document.createElement("div");
+      info.className = "history-info";
+      const ct = item.decoded.contentType || "unknown";
+      const size = item.decoded.payloadHex ? (item.decoded.payloadHex.length / 2) : 0;
+      const sizeStr = size > 1024 ? `${(size / 1024).toFixed(1)} KB` : `${size} B`;
+      info.innerHTML = `<div style="font-weight:bold">${escapeHtml(contentTypeBase(ct))} <span style="color:#888;font-weight:normal;font-size:0.8em">· ${sizeStr}${item.blockHeight ? ` · block ${item.blockHeight}` : ""}</span></div>`
+        + `<a href="${EXPLORER}/tx/${escapeHtml(item.txid)}" target="_blank" rel="noreferrer" style="font-size:0.8em;color:#06c;word-break:break-all">${escapeHtml(item.txid)}</a>`;
+
+      // Download button
+      const actions = document.createElement("div");
+      actions.className = "explore-actions";
+      const dlBtn = document.createElement("button");
+      dlBtn.textContent = "Download";
+      dlBtn.onclick = () => downloadDroplet(item.decoded);
+      actions.appendChild(dlBtn);
+
+      row.appendChild(thumbEl);
+      row.appendChild(info);
+      row.appendChild(actions);
+      return row;
+    }
+
+    /* ── Search by txid ── */
+    async function exploreSearchTxid({ txid = ui.exploreTxid.value, updateUrl = true } = {}) {
+      const normalizedTxid = normalizeTxid(txid);
+      if (!normalizedTxid) {
+        ui.exploreSearchResult.textContent = "Error: Enter a 64-character hex txid.";
+        return;
+      }
+      ui.exploreTxid.value = normalizedTxid;
+      if (updateUrl) setRouteTxid(normalizedTxid);
+      ui.exploreSearchResult.textContent = "Fetching…";
+      ui.btnExploreFetch.disabled = true;
+      try {
+        const hexR = await throttledFetch(`${EXPLORER}/api/tx/${normalizedTxid}/hex`);
+        if (hexR.status === 429) throw new Error("Throttled");
+        if (!hexR.ok) throw new Error(`Transaction not found (${hexR.status})`);
+        const hex = await hexR.text();
+        const decoded = runtime.decodeRevealPayload(hex);
+        const thumb = await generateThumbnail(decoded.payloadHex, decoded.contentType);
+        ui.exploreSearchResult.replaceChildren(
+          buildExploreEntry({ txid: normalizedTxid, decoded, thumb, blockHeight: null })
+        );
+      } catch (err) {
+        if (err.message !== "Throttled") {
+          ui.exploreSearchResult.textContent = `Error: ${err.message}`;
+        }
+      } finally {
+        ui.btnExploreFetch.disabled = false;
+      }
+    }
+
+    /* ── Scan a range of blocks for b00b droplets ── */
+    async function exploreScanRange(fromHeight, toHeight, prepend) {
+      const found = [];
+      for (let h = fromHeight; h >= toHeight && h > 0; h--) {
+        ui.exploreStatus.textContent = `Scanning block ${h}…`;
+        try {
+          const hashR = await throttledFetch(`${EXPLORER}/api/block-height/${h}`);
+          if (!hashR.ok) continue;
+          const hash = await hashR.text();
+
+          const txidsR = await throttledFetch(`${EXPLORER}/api/block/${hash}/txids`);
+          if (!txidsR.ok) continue;
+          const txids = await txidsR.json();
+
+          for (const txid of txids) {
+            if (!txid.startsWith("b00b") || explore.seenTxids.has(txid)) continue;
+            try {
+              const hexR = await throttledFetch(`${EXPLORER}/api/tx/${txid}/hex`);
+              if (!hexR.ok) continue;
+              const hex = await hexR.text();
+              const decoded = runtime.decodeRevealPayload(hex);
+              const thumb = await generateThumbnail(decoded.payloadHex, decoded.contentType);
+              const entry = { txid, decoded, thumb, blockHeight: h };
+              found.push(entry);
+              explore.seenTxids.add(txid);
+              const el = buildExploreEntry(entry);
+              if (prepend) {
+                ui.exploreList.prepend(el);
+              } else {
+                ui.exploreList.appendChild(el);
+              }
+            } catch { /* b00b prefix but not a valid droplet */ }
+          }
+        } catch { /* block fetch failed, skip */ }
+      }
+      return found;
+    }
+
+    /* ── Scan for newest blocks (auto-poll) ── */
+    async function exploreScanNew() {
+      if (explore.scanning) return;
+      explore.scanning = true;
+      try {
+        const tipR = await throttledFetch(`${EXPLORER}/api/blocks/tip/height`);
+        if (tipR.status === 429) throw new Error("Throttled");
+        if (!tipR.ok) return;
+        const tip = parseInt(await tipR.text());
+
+        if (explore.tipHeight === null) {
+          // First scan — only scan the very tip block
+          await exploreScanRange(tip, tip, false);
+          explore.tipHeight = tip;
+        } else if (tip > explore.tipHeight) {
+          // New blocks since last scan — scan all the way up from tipHeight + 1 to tip
+          await exploreScanRange(tip, explore.tipHeight + 1, true);
+          explore.tipHeight = tip;
+        }
+
+        const count = explore.seenTxids.size;
+        ui.exploreStatus.textContent = count > 0
+          ? `${count} droplet${count !== 1 ? "s" : ""} found · scanning from block ${explore.tipHeight} · waiting for next block`
+          : `No droplets found in latest block ${explore.tipHeight} · waiting for new block`;
+      } catch (err) {
+        if (err.message !== "Throttled") {
+          ui.exploreStatus.textContent = `Error: ${err.message}`;
+        }
+      } finally {
+        explore.scanning = false;
+      }
+    }
+
+    /* ── Auto-scan lifecycle ── */
+    function startExploreAutoScan() {
+      if (explore.autoTimer) return;
+      exploreScanNew();
+      explore.autoTimer = setInterval(exploreScanNew, EXPLORE_POLL_MS);
+    }
+    function stopExploreAutoScan() {
+      clearInterval(explore.autoTimer);
+      explore.autoTimer = null;
+    }
+    async function openExploreTxid(txid, { updateUrl = true } = {}) {
+      switchTab("explore");
+      await exploreSearchTxid({ txid, updateUrl });
+    }
+
+    /* ── Init ── */
+    async function init() {
+      const mod = await import("./pkg/dropletbox.js");
+      await mod.default();
+      runtime.decodeRevealPayload = mod.decodeRevealPayload;
+      runtime.app = loadAppFromSnapshot(mod);
+      const walletInfo = runtime.app.wallet();
+      runtime.defaultDestinationAddress = walletInfo?.destinationAddress || "";
+
+      renderUpload(runtime.app.currentUploadPreview());
+      initializeDestinationUi(runtime.app.currentSwap()?.destinationAddress || "");
+      ui.useDefaultAddress.addEventListener("change", () => {
+        ui.address.value = ui.useDefaultAddress.checked ? runtime.defaultDestinationAddress : "";
+        syncDestinationUi(false);
+        scheduleQuote();
+      });
+      ui.address.addEventListener("input", () => {
+        scheduleQuote();
+      });
+      ui.btnUpload.addEventListener("click", () => ui.uploadInput.click());
+      ui.uploadInput.addEventListener("change", handleUploadChange);
+      ui.btnClearUpload.addEventListener("click", async () => {
+        ui.uploadInput.value = "";
+        await runtime.app.clearUpload();
+        saveSnapshot();
+        renderUpload(runtime.app.currentUploadPreview());
+        await updateQuote();
+      });
+      ui.btnNew.addEventListener("click", () => {
+        if (ui.btnNew._needsConfirm) {
+          if (!confirm("This will cancel the current droplet and may lose funds. Continue?")) return;
+        }
+        resetApp();
+      });
+
+      bindCopy(ui.btnCopyCommit, () => ui.commitHex.value, "Copy commit tx");
+      bindCopy(ui.btnCopyReveal, () => ui.revealHex.value, "Copy reveal tx");
+      ui.btnClearHistory.addEventListener("click", () => {
+        if (!confirm("Clear all droplet history from this browser?")) return;
+        saveHistory([]);
+        renderHistory();
+      });
+      renderHistory();
+
+      // Tab switching
+      ui.tabBtnCreate.addEventListener("click", () => switchTab("create"));
+      ui.tabBtnExplore.addEventListener("click", () => switchTab("explore"));
+
+      // Explore
+      ui.btnExploreFetch.addEventListener("click", exploreSearchTxid);
+      ui.exploreTxid.addEventListener("keydown", (e) => { if (e.key === "Enter") exploreSearchTxid(); });
+
+      const pollMs = Math.max(walletInfo?.pollIntervalMs || 5000, 5000);
+      await renderSwap();
+      const initialRouteTxid = routeTxid();
+      if (initialRouteTxid) {
+        await openExploreTxid(initialRouteTxid, { updateUrl: false });
+      }
+      runtime.pollTimer = setInterval(poll, pollMs);
+      console.log("wasm loaded");
+    }
+
+    init();
+  </script>
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+</body>
+</html>

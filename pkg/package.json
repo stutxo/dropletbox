@@ -1,0 +1,15 @@
+{
+  "name": "dropletbox",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "dropletbox_bg.wasm",
+    "dropletbox.js",
+    "dropletbox.d.ts"
+  ],
+  "main": "dropletbox.js",
+  "types": "dropletbox.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
