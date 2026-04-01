@@ -346,12 +346,31 @@
     .explore-search-row input { flex: 1; }
     .explore-entry {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 10px;
       padding: 8px 0;
       border-bottom: 1px solid #eee;
     }
     .explore-entry:last-child { border-bottom: none; }
+    .explore-thumb {
+      width: 100px;
+      height: 100px;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+      font-size: 12px;
+      text-align: center;
+      background: #fff;
+    }
+    .explore-thumb img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      display: block;
+    }
     .explore-actions {
       flex-shrink: 0;
       display: flex;
@@ -481,7 +500,8 @@
     const TXID_RE = /^[0-9a-fA-F]{64}$/;
     const RETRYABLE = ["transaction.mempool", "transaction.confirmed", "invoice.settled"];
     const MAX_UPLOAD_BYTES = 390_000;
-    const THUMB_SIZE = 80; // px – rendered at 40px CSS but 2x for retina
+    const HISTORY_THUMB_SIZE = 80; // px – rendered at 40px CSS but 2x for retina
+    const EXPLORE_THUMB_SIZE = 200; // px – rendered at 100px in the explorer list/search
     const el = (id) => document.getElementById(id);
     const ui = {
       globalError: el("global-error"),
@@ -828,8 +848,8 @@
       ui.revealHex.value = status.revealTxHex || "";
     }
 
-    /* ── Thumbnail generation for history ── */
-    function generateThumbnail(payloadHex, contentType) {
+    /* ── Thumbnail generation for history / explorer ── */
+    function generateThumbnail(payloadHex, contentType, size = HISTORY_THUMB_SIZE) {
       return new Promise((resolve) => {
         const base = contentTypeBase(contentType);
 
@@ -847,14 +867,14 @@
           const img = new Image();
           img.onload = () => {
             const canvas = document.createElement("canvas");
-            canvas.width = THUMB_SIZE;
-            canvas.height = THUMB_SIZE;
+            canvas.width = size;
+            canvas.height = size;
             const ctx = canvas.getContext("2d");
             // cover-crop to square
             const s = Math.min(img.width, img.height);
             const sx = (img.width - s) / 2;
             const sy = (img.height - s) / 2;
-            ctx.drawImage(img, sx, sy, s, s, 0, 0, THUMB_SIZE, THUMB_SIZE);
+            ctx.drawImage(img, sx, sy, s, s, 0, 0, size, size);
             URL.revokeObjectURL(url);
             resolve({ type: "image", dataUrl: canvas.toDataURL("image/png") });
           };
@@ -1210,7 +1230,7 @@
 
       // Thumbnail
       const thumbEl = document.createElement("div");
-      thumbEl.className = "history-thumb";
+      thumbEl.className = "explore-thumb";
       if (item.thumb?.type === "image" && item.thumb.dataUrl) {
         const img = document.createElement("img");
         img.src = item.thumb.dataUrl;
@@ -1262,7 +1282,7 @@
         if (!hexR.ok) throw new Error(`Transaction not found (${hexR.status})`);
         const hex = await hexR.text();
         const decoded = runtime.decodeRevealPayload(hex);
-        const thumb = await generateThumbnail(decoded.payloadHex, decoded.contentType);
+        const thumb = await generateThumbnail(decoded.payloadHex, decoded.contentType, EXPLORE_THUMB_SIZE);
         ui.exploreSearchResult.replaceChildren(
           buildExploreEntry({ txid: normalizedTxid, decoded, thumb, blockHeight: null })
         );
@@ -1296,7 +1316,7 @@
               if (!hexR.ok) continue;
               const hex = await hexR.text();
               const decoded = runtime.decodeRevealPayload(hex);
-              const thumb = await generateThumbnail(decoded.payloadHex, decoded.contentType);
+              const thumb = await generateThumbnail(decoded.payloadHex, decoded.contentType, EXPLORE_THUMB_SIZE);
               const entry = { txid, decoded, thumb, blockHeight: h };
               found.push(entry);
               explore.seenTxids.add(txid);
